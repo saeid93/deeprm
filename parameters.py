@@ -9,19 +9,19 @@ class Parameters:
 
         self.output_filename = 'data/tmp'
 
-        self.num_epochs = 10000         # number of training epochs
-        self.simu_len = 10             # length of the busy cycle that repeats itself
-        self.num_ex = 1                # number of sequences
+        self.num_epochs = 10000        # number of training epochs
+        self.simu_len = 10             # length of the busy cycle that repeats itself TODO what is?
+        self.num_ex = 1                # number of sequences TODO what is?
 
-        self.output_freq = 10          # interval for output and store parameters
+        self.output_freq = 10          # interval for output and store parameters TODO what is?
 
         self.num_seq_per_batch = 10    # number of sequences to compute baseline
         self.episode_max_length = 200  # enforcing an artificial terminal
 
-        self.num_res = 2               # number of resources in the system
-        self.num_nw = 5                # maximum allowed number of work in the queue
+        self.num_res = 2               # number of resources in the system TODO how it is managed?
+        self.num_nw = 5                # maximum allowed number of work in the queue TODO difference from backlog
 
-        self.time_horizon = 20         # number of time steps in the graph
+        self.time_horizon = 20         # number of time steps in the graph TODO what is?
         self.max_job_len = 15          # maximum duration of new jobs
         self.res_slot = 10             # maximum number of available resource slots
         self.max_job_size = 10         # maximum resource request of new work
@@ -30,9 +30,9 @@ class Parameters:
 
         self.max_track_since_new = 10  # track how many time steps since last new jobs
 
-        self.job_num_cap = 40          # maximum number of distinct colors in current work graph
+        self.job_num_cap = 40          # maximum number of distinct colors in current work graph TODO what is?
 
-        self.new_job_rate = 0.7        # lambda in new job arrival Poisson Process
+        self.new_job_rate = 0.7        # lambda in new job arrival Poisson Process TODO how the Poisson jobs are created?
 
         self.discount = 1           # discount factor
 

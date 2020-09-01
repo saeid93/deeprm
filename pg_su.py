@@ -9,8 +9,10 @@ import pg_network
 import other_agents
 import job_distribution
 
-np.set_printoptions(threshold='nan')
+np.set_printoptions(threshold=2**31)
 
+# NOTE policy_gradient_trained_with_supervised_learning: It's for imitation learning. It was not mentioned in the paper.
+# the data would be scheduling decision from existing algorithms, the "label" would be their actions.
 
 def add_sample(X, y, idx, X_to_add, y_to_add):
     X[idx, 0, :, :] = X_to_add

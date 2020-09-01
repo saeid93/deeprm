@@ -3,6 +3,7 @@ os.environ["THEANO_FLAGS"] = "device=cpu,floatX=float32"
 import sys
 import getopt
 import matplotlib
+import json
 matplotlib.use('Agg')
 
 import parameters
@@ -11,133 +12,70 @@ import pg_su
 import slow_down_cdf
 
 
-def script_usage():
-    print('--exp_type <type of experiment> \n'
-          '--num_res <number of resources> \n'
-          '--num_nw <number of visible new work> \n'
-          '--simu_len <simulation length> \n'
-          '--num_ex <number of examples> \n'
-          '--num_seq_per_batch <rough number of samples in one batch update> \n'
-          '--eps_max_len <episode maximum length (terminated at the end)> \n'
-          '--num_epochs <number of epoch to do the training>\n'
-          '--time_horizon <time step into future, screen height> \n'
-          '--res_slot <total number of resource slots, screen width> \n'
-          '--max_job_len <maximum new job length> \n'
-          '--max_job_size <maximum new job resource request> \n'
-          '--new_job_rate <new job arrival rate> \n'
-          '--dist <discount factor> \n'
-          '--lr_rate <learning rate> \n'
-          '--ba_size <batch size> \n'
-          '--pg_re <parameter file for pg network> \n'
-          '--v_re <parameter file for v network> \n'
-          '--q_re <parameter file for q network> \n'
-          '--out_freq <network output frequency> \n'
-          '--ofile <output file name> \n'
-          '--log <log file name> \n'
-          '--render <plot dynamics> \n'
-          '--unseen <generate unseen example> \n')
+"""
+parameters read from config.json:
 
+exp_type:              <type of experiment>
+num_res:               <number of resources>
+num_nw:                <number of visible new work>
+simu_len:              <simulation length>
+num_ex:                <number of examples>
+num_seq_per_batch:     <rough number of samples in one batch update>
+eps_max_len:           <episode maximum length (terminated at the end)>
+num_epochs:            <number of epoch to do the training>
+time_horizon:          <time step into future, screen height> 
+res_slot:              <total number of resource slots, screen width> 
+max_job_len:           <maximum new job length>
+max_job_size:          <maximum new job resource request>
+new_job_rate:          <new job arrival rate>
+dist:                  <discount factor>
+lr_rate:               <learning rate>
+ba_size:               <batch size>
+pg_re:                 <parameter file for pg network>
+v_re:                  <parameter file for v network>
+q_re:                  <parameter file for q network>
+out_freq:              <network output frequency>
+ofile:                 <output file name>
+log:                   <log file name>
+render:                <plot dynamics>
+unseen:                <generate unseen example>
+"""
 
 def main():
-
+    config_file = "config.json"
+    with open(config_file) as cf:
+        arg = json.loads(cf.read()) # TODO arg to config
+    
     pa = parameters.Parameters()
 
-    type_exp = 'pg_re'  # 'pg_su' 'pg_su_compact' 'v_su', 'pg_v_re', 'pg_re', q_re', 'test'
 
-    pg_resume = None
-    v_resume = None
-    q_resume = None
-    log = None
+    type_exp = arg['exp_type']
+    pa.num_res = arg['num_res']
+    pa.num_nw = arg['num_nw']
+    pa.simu_len = arg['simu_len']
+    pa.num_ex = arg['num_ex']
+    pa.num_seq_per_batch = arg['num_seq_per_batch']
+    pa.episode_max_length = arg['eps_max_len']
+    pa.num_epochs = arg['num_epochs']
+    pa.time_horizon = arg['time_horizon']
+    pa.res_slot = arg['res_slot']
+    pa.max_job_len = arg['max_job_len']
+    pa.max_job_size = arg['max_job_size']
+    pa.new_job_rate = arg['new_job_rate']
+    pa.discount = arg['dist']
+    pa.lr_rate = arg['lr_rate']
+    pa.batch_size = arg['ba_size']
+    pg_resume = arg['pg_re']
+    v_resume = arg['v_re']
+    q_resume = arg['q_re']
+    pa.output_freq = arg['out_freq']
+    pa.output_filename = arg['ofile']
+    log = arg['log']
+    render = arg['render']
+    pa.generate_unseen = arg['unseen'] # TODO what is the use
 
-    render = False
 
-    try:
-        opts, args = getopt.getopt(
-            sys.argv[1:],
-            "hi:o:", ["exp_type=",
-                      "num_res=",
-                      "num_nw=",
-                      "simu_len=",
-                      "num_ex=",
-                      "num_seq_per_batch=",
-                      "eps_max_len=",
-                      "num_epochs=",
-                      "time_horizon=",
-                      "res_slot=",
-                      "max_job_len=",
-                      "max_job_size=",
-                      "new_job_rate=",
-                      "dist=",
-                      "lr_rate=",
-                      "ba_size=",
-                      "pg_re=",
-                      "v_re=",
-                      "q_re=",
-                      "out_freq=",
-                      "ofile=",
-                      "log=",
-                      "render=",
-                      "unseen="])
-
-    except getopt.GetoptError:
-        script_usage()
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt == '-h':
-            script_usage()
-            sys.exit()
-        elif opt in ("-e", "--exp_type"):
-            type_exp = arg
-        elif opt in ("-n", "--num_res"):
-            pa.num_res = int(arg)
-        elif opt in ("-w", "--num_nw"):
-            pa.num_nw = int(arg)
-        elif opt in ("-s", "--simu_len"):
-            pa.simu_len = int(arg)
-        elif opt in ("-n", "--num_ex"):
-            pa.num_ex = int(arg)
-        elif opt in ("-sp", "--num_seq_per_batch"):
-            pa.num_seq_per_batch = int(arg)
-        elif opt in ("-el", "--eps_max_len"):
-            pa.episode_max_length = int(arg)
-        elif opt in ("-ne", "--num_epochs"):
-            pa.num_epochs = int(arg)
-        elif opt in ("-t", "--time_horizon"):
-            pa.time_horizon = int(arg)
-        elif opt in ("-rs", "--res_slot"):
-            pa.res_slot = int(arg)
-        elif opt in ("-ml", "--max_job_len"):
-            pa.max_job_len = int(arg)
-        elif opt in ("-ms", "--max_job_size"):
-            pa.max_job_size = int(arg)
-        elif opt in ("-nr", "--new_job_rate"):
-            pa.new_job_rate = float(arg)
-        elif opt in ("-d", "--dist"):
-            pa.discount = float(arg)
-        elif opt in ("-l", "--lr_rate"):
-            pa.lr_rate = float(arg)
-        elif opt in ("-b", "--ba_size"):
-            pa.batch_size = int(arg)
-        elif opt in ("-p", "--pg_re"):
-            pg_resume = arg
-        elif opt in ("-v", "--v_re"):
-            v_resume = arg
-        elif opt in ("-q", "--q_re"):
-            q_resume = arg
-        elif opt in ("-f", "--out_freq"):
-            pa.output_freq = int(arg)
-        elif opt in ("-o", "--ofile"):
-            pa.output_filename = arg
-        elif opt in ("-lg", "--log"):
-            log = arg
-        elif opt in ("-r", "--render"):
-            render = (arg == 'True')
-        elif opt in ("-u", "--unseen"):
-            pa.generate_unseen = (arg == 'True')
-        else:
-            script_usage()
-            sys.exit()
+# TODO debug and find out what compute_dependent_parameters() does
 
     pa.compute_dependent_parameters()
 

@@ -13,6 +13,8 @@ import job_distribution
 import pg_network
 import slow_down_cdf
 
+# NOTE policy_gradient_with_reinforcement_learning: the algorithm explained
+#      in the paper
 
 def init_accums(pg_learner):  # in rmsprop
     accums = []
@@ -233,6 +235,7 @@ def launch(pa, pg_resume=None, render=False, repre='image', end='no_new_job'):
 
     nw_len_seqs, nw_size_seqs = job_distribution.generate_sequence_work(pa, seed=42)
 
+    # TODO what is here?
     for ex in xrange(pa.num_ex):
 
         print "-prepare for env-", ex
@@ -242,6 +245,7 @@ def launch(pa, pg_resume=None, render=False, repre='image', end='no_new_job'):
         env.seq_no = ex
         envs.append(env)
 
+    # TODO what is here?
     for ex in xrange(pa.batch_size + 1):  # last worker for updating the parameters
 
         print "-prepare for worker-", ex

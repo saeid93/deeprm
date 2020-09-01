@@ -55,6 +55,11 @@ class Env:
         self.job_record = JobRecord()
         self.extra_info = ExtraInfo(pa)
 
+# NOTE It is correct. generate_sequence_work calls dist() to generate the synthetic workload.
+# The code has normal distribution (normal_dist) and bi-model distribution (bi_model_dist) provided.
+# One way to reflect your workload is to add another distribution function similar to these.
+# Hope this helps.
+
     def generate_sequence_work(self, simu_len):
 
         nw_len_seq = np.zeros(simu_len, dtype=int)
